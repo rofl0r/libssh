@@ -1148,7 +1148,7 @@ error:
 int channel_write_common(ssh_channel channel, const void *data,
     uint32_t len, int is_stderr) {
   ssh_session session;
-  int origlen = len;
+  uint32_t origlen = len;
   size_t effectivelen;
   size_t maxpacketlen;
 
@@ -1202,7 +1202,7 @@ int channel_write_common(ssh_channel channel, const void *data,
           /* nothing can be written */
           ssh_log(session, SSH_LOG_PROTOCOL,
                 "Wait for a growing window message...");
-          return 0;
+          goto noerror;
       }
       effectivelen = len > channel->remote_window ? channel->remote_window : len;
     } else {
@@ -1242,8 +1242,10 @@ int channel_write_common(ssh_channel channel, const void *data,
     data = ((uint8_t*)data + effectivelen);
   }
 
+noerror:
+
   leave_function();
-  return origlen;
+  return ((int)origlen - (int)len);
 error:
   buffer_reinit(session->out_buffer);
 
