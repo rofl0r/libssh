@@ -147,6 +147,11 @@ err:
     return NULL;
 }
 
+const char* ssh_get_banner(ssh_session session) {
+	if(!session) return NULL;
+	return session->serverbanner;
+}
+
 /**
  * @brief Deallocate a SSH session handle.
  *

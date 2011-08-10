@@ -520,6 +520,8 @@ LIBSSH_API void ssh_event_free(ssh_event event);
 LIBSSH_API ssh_private_key privatekey_from_base64(ssh_session session, const char *b64_pkey,
     int type, const char *passphrase);
 
+LIBSSH_API const char* ssh_get_banner(ssh_session session);
+
 #ifndef LIBSSH_LEGACY_0_4
 #include "libssh/legacy.h"
 #endif
