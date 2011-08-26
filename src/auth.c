@@ -59,27 +59,23 @@
  * @param[in] session   The SSH session handle.
  *
  * @returns SSH_OK on success, SSH_ERROR on error.
- * @returns SSH_AGAIN on nonblocking mode, if calling that function
- * again is necessary
+ * @returns SSH_AGAIN in nonblocking mode, if calling that function
+ * again is necessary, and in blocking mode when the timeout is hit
  */
 static int ask_userauth(ssh_session session) {
-    int rc = 0;
+	enter_function();
 
-    enter_function();
-    do {
-        rc = ssh_service_request(session,"ssh-userauth");
-        if (ssh_is_blocking(session)) {
-            if(rc == SSH_AGAIN)
-                ssh_handle_packets(session, -2);
-        } else {
-            /* nonblocking */
-            ssh_handle_packets(session, 0);
-            rc = ssh_service_request(session, "ssh-userauth");
-            break;
-        }
-    } while (rc == SSH_AGAIN);
-    leave_function();
-    return rc;
+	int rc = ssh_service_request(session,"ssh-userauth");
+	if(ssh_is_blocking(session)) {
+		if(rc == SSH_AGAIN)
+			rc = ssh_handle_packets(session, -2);
+	} else {
+		ssh_handle_packets(session, 0);
+		rc = ssh_service_request(session, "ssh-userauth");
+	}
+
+	leave_function();
+	return rc;
 }
 
 /**
