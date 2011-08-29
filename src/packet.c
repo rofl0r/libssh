@@ -368,7 +368,7 @@ void ssh_packet_process(ssh_session session, uint8_t type){
 		ssh_packet_send_unimplemented(session, session->recv_seq-1);
 	}
 error:
-
+	return;
 }
 
 /** @internal
