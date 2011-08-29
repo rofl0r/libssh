@@ -2489,7 +2489,8 @@ int ssh_channel_read(ssh_channel channel, void *dest, uint32_t count, int is_std
       break;
     }
 
-    ssh_handle_packets(session, -2);
+    int rc = ssh_handle_packets(session, -2);
+    if(rc != SSH_OK) return rc;
   }
 
   len = buffer_get_rest_len(stdbuf);
