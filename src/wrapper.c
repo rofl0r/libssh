@@ -262,7 +262,7 @@ int crypt_set_algorithms_server(ssh_session session){
     }
 
     /* we must scan the kex entries to find crypto algorithms and set their appropriate structure */
-    enter_function();
+
     /* out */
     server = session->server_kex.methods[SSH_CRYPT_S_C];
     if(session->client_kex.methods) {
@@ -277,7 +277,7 @@ int crypt_set_algorithms_server(ssh_session session){
     if(!match){
         ssh_set_error(session,SSH_FATAL,"Crypt_set_algorithms_server : no matching algorithm function found for %s",server);
         free(match);
-        leave_function();
+
         return SSH_ERROR;
     }
     while(ssh_ciphertab[i].name && strcmp(match,ssh_ciphertab[i].name))
@@ -285,7 +285,7 @@ int crypt_set_algorithms_server(ssh_session session){
     if(!ssh_ciphertab[i].name){
         ssh_set_error(session,SSH_FATAL,"Crypt_set_algorithms_server : no crypto algorithm function found for %s",server);
         free(match);
-        leave_function();
+
         return SSH_ERROR;
     }
     ssh_log(session,SSH_LOG_PACKET,"Set output algorithm %s",match);
@@ -294,7 +294,7 @@ int crypt_set_algorithms_server(ssh_session session){
     session->next_crypto->out_cipher = cipher_new(i);
     if (session->next_crypto->out_cipher == NULL) {
       ssh_set_error(session, SSH_FATAL, "No space left");
-      leave_function();
+
       return SSH_ERROR;
     }
     i=0;
@@ -305,7 +305,7 @@ int crypt_set_algorithms_server(ssh_session session){
     if(!match){
         ssh_set_error(session,SSH_FATAL,"Crypt_set_algorithms_server : no matching algorithm function found for %s",server);
         free(match);
-        leave_function();
+
         return SSH_ERROR;
     }
     while(ssh_ciphertab[i].name && strcmp(match,ssh_ciphertab[i].name))
@@ -313,7 +313,7 @@ int crypt_set_algorithms_server(ssh_session session){
     if(!ssh_ciphertab[i].name){
         ssh_set_error(session,SSH_FATAL,"Crypt_set_algorithms_server : no crypto algorithm function found for %s",server);
         free(match);
-        leave_function();
+
         return SSH_ERROR;
     }
     ssh_log(session,SSH_LOG_PACKET,"Set input algorithm %s",match);
@@ -322,7 +322,7 @@ int crypt_set_algorithms_server(ssh_session session){
     session->next_crypto->in_cipher = cipher_new(i);
     if (session->next_crypto->in_cipher == NULL) {
       ssh_set_error(session, SSH_FATAL, "No space left");
-      leave_function();
+
       return SSH_ERROR;
     }
 
@@ -356,11 +356,11 @@ int crypt_set_algorithms_server(ssh_session session){
         ssh_set_error(session, SSH_FATAL, "Cannot know what %s is into %s",
             match ? match : NULL, server);
         SAFE_FREE(match);
-        leave_function();
+
         return SSH_ERROR;
     }
     SAFE_FREE(match);
-    leave_function();
+
     return SSH_OK;
 }
 

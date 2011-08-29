@@ -135,14 +135,14 @@ int ssh_packet_socket_callback(const void *data, size_t receivedlen, void *user)
   uint8_t padding;
   size_t processed=0; /* number of byte processed from the callback */
 
-  enter_function();
+
   if (session->session_state == SSH_SESSION_STATE_ERROR)
 	  goto error;
   switch(session->packet_state) {
     case PACKET_STATE_INIT:
     	if(receivedlen < blocksize){
     		/* We didn't receive enough data to read at least one block size, give up */
-    		leave_function();
+
     		return 0;
     	}
       memset(&session->in_packet, 0, sizeof(PACKET));
@@ -280,7 +280,7 @@ int ssh_packet_socket_callback(const void *data, size_t receivedlen, void *user)
       			receivedlen - processed,user);
       	processed += rc;
       }
-      leave_function();
+
       return processed;
     case PACKET_STATE_PROCESSING:
     	ssh_log(session, SSH_LOG_RARE, "Nested packet processing. Delaying.");
@@ -293,7 +293,7 @@ int ssh_packet_socket_callback(const void *data, size_t receivedlen, void *user)
 
 error:
   session->session_state= SSH_SESSION_STATE_ERROR;
-  leave_function();
+
   return processed;
 }
 
@@ -341,7 +341,7 @@ void ssh_packet_process(ssh_session session, uint8_t type){
 	struct ssh_iterator *i;
 	int r=SSH_PACKET_NOT_USED;
 	ssh_packet_callbacks cb;
-	enter_function();
+
 	ssh_log(session,SSH_LOG_PACKET, "Dispatching handler for packet type %d",type);
 	if(session->packet_callbacks == NULL){
 		ssh_log(session,SSH_LOG_RARE,"Packet callback is not initialized !");
@@ -368,7 +368,7 @@ void ssh_packet_process(ssh_session session, uint8_t type){
 		ssh_packet_send_unimplemented(session, session->recv_seq-1);
 	}
 error:
-	leave_function();
+
 }
 
 /** @internal
@@ -379,11 +379,11 @@ error:
  */
 int ssh_packet_send_unimplemented(ssh_session session, uint32_t seqnum){
   int r;
-  enter_function();
+
   buffer_add_u8(session->out_buffer, SSH2_MSG_UNIMPLEMENTED);
   buffer_add_u32(session->out_buffer, htonl(seqnum));
   r = packet_send(session);
-  leave_function();
+
   return r;
 }
 
@@ -405,11 +405,11 @@ SSH_PACKET_CALLBACK(ssh_packet_unimplemented){
  * @parse the "Type" header field of a packet and updates the session
  */
 int ssh_packet_parse_type(ssh_session session) {
-  enter_function();
+
 
   memset(&session->in_packet, 0, sizeof(PACKET));
   if(session->in_buffer == NULL) {
-    leave_function();
+
     return SSH_ERROR;
   }
 
@@ -418,14 +418,14 @@ int ssh_packet_parse_type(ssh_session session) {
 
   if(buffer_get_u8(session->in_buffer, &session->in_packet.type) == 0) {
     ssh_set_error(session, SSH_FATAL, "Packet too short to read type");
-    leave_function();
+
     return SSH_ERROR;
   }
 
   ssh_log(session, SSH_LOG_PACKET, "Type %hhd", session->in_packet.type);
   session->in_packet.valid = 1;
 
-  leave_function();
+
   return SSH_OK;
 }
 
@@ -436,12 +436,12 @@ int ssh_packet_parse_type(ssh_session session) {
 static int ssh_packet_write(ssh_session session) {
   int rc = SSH_ERROR;
 
-  enter_function();
+
 
   rc=ssh_socket_write(session->socket,
       buffer_get_rest(session->out_buffer),
       buffer_get_rest_len(session->out_buffer));
-  leave_function();
+
   return rc;
 }
 
@@ -455,7 +455,7 @@ static int packet_send2(ssh_session session) {
   uint32_t finallen;
   uint8_t padding;
 
-  enter_function();
+
 
   ssh_log(session, SSH_LOG_PACKET,
       "Writing on the wire a packet having %u bytes before", currentlen);
@@ -518,7 +518,7 @@ static int packet_send2(ssh_session session) {
     rc = SSH_ERROR;
   }
 error:
-  leave_function();
+
   return rc; /* SSH_OK, AGAIN or ERROR */
 }
 

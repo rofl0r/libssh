@@ -162,7 +162,7 @@ const char* ssh_get_banner(ssh_session session) {
  */
 void ssh_free(ssh_session session) {
   int i;
-  enter_function();
+
 
   if (session == NULL) {
     return;
@@ -263,7 +263,7 @@ void ssh_free(ssh_session session) {
  * @param[in]  session  The SSH session to disconnect.
  */
 void ssh_silent_disconnect(ssh_session session) {
-  enter_function();
+
 
   if (session == NULL) {
     return;
@@ -272,7 +272,7 @@ void ssh_silent_disconnect(ssh_session session) {
   ssh_socket_close(session->socket);
   session->alive = 0;
   ssh_disconnect(session);
-  leave_function();
+
 }
 
 /**
@@ -320,7 +320,7 @@ int ssh_blocking_flush(ssh_session session, int timeout){
 	if(session==NULL)
 		return SSH_ERROR;
 
-	enter_function();
+
 	s=session->socket;
 	ssh_timestamp_init(&ts);
 	while (ssh_socket_buffered_write_bytes(s) > 0 && session->alive) {
@@ -332,7 +332,7 @@ int ssh_blocking_flush(ssh_session session, int timeout){
 		timeout = ssh_timeout_update(&ts, timeout);
 	}
 
-	leave_function();
+
 	return rc;
 }
 
@@ -448,7 +448,7 @@ int ssh_handle_packets(ssh_session session, int timeout) {
     if (session == NULL || session->socket == NULL) {
         return SSH_ERROR;
     }
-    enter_function();
+
 
     spoll_in = ssh_socket_get_poll_handle_in(session->socket);
     spoll_out = ssh_socket_get_poll_handle_out(session->socket);
@@ -473,7 +473,7 @@ int ssh_handle_packets(ssh_session session, int timeout) {
         session->session_state = SSH_SESSION_STATE_ERROR;
     }
 
-    leave_function();
+
     return rc;
 }
 
@@ -641,12 +641,12 @@ SSH_PACKET_CALLBACK(ssh_packet_ignore_callback){
  */
 void ssh_socket_exception_callback(int code, int errno_code, void *user){
     ssh_session session=(ssh_session)user;
-    enter_function();
+
     ssh_log(session,SSH_LOG_RARE,"Socket exception callback: %d (%d)",code, errno_code);
     session->session_state=SSH_SESSION_STATE_ERROR;
     ssh_set_error(session,SSH_FATAL,"Socket error: %s",strerror(errno_code));
     session->ssh_connection_callback(session);
-    leave_function();
+
 }
 
 /** @} */

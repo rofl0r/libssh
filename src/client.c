@@ -55,11 +55,11 @@
  */
 static void socket_callback_connected(int code, int errno_code, void *user){
 	ssh_session session=(ssh_session)user;
-	enter_function();
+
 	if(session->session_state != SSH_SESSION_STATE_CONNECTING){
 		ssh_set_error(session,SSH_FATAL, "Wrong state in socket_callback_connected : %d",
 				session->session_state);
-		leave_function();
+
 		return;
 	}
 	ssh_log(session,SSH_LOG_RARE,"Socket connection callback: %d (%d)",code, errno_code);
@@ -70,7 +70,7 @@ static void socket_callback_connected(int code, int errno_code, void *user){
 		ssh_set_error(session,SSH_FATAL,"%s",strerror(errno_code));
 	}
 	session->ssh_connection_callback(session);
-	leave_function();
+
 }
 
 /**
@@ -90,10 +90,10 @@ static int callback_receive_banner(const void *data, size_t len, void *user) {
   char *str = NULL;
   size_t i;
   int ret=0;
-  enter_function();
+
   if(session->session_state != SSH_SESSION_STATE_SOCKET_CONNECTED){
   	ssh_set_error(session,SSH_FATAL,"Wrong state in callback_receive_banner : %d",session->session_state);
-  	leave_function();
+
   	return SSH_ERROR;
   }
   for(i=0;i<len;++i){
@@ -113,18 +113,18 @@ static int callback_receive_banner(const void *data, size_t len, void *user) {
   		session->session_state=SSH_SESSION_STATE_BANNER_RECEIVED;
   		ssh_log(session,SSH_LOG_PACKET,"Received banner: %s",str);
 		session->ssh_connection_callback(session);
-  		leave_function();
+
   		return ret;
   	}
   	if(i>127){
   		/* Too big banner */
   		session->session_state=SSH_SESSION_STATE_ERROR;
   		ssh_set_error(session,SSH_FATAL,"Receiving banner: too large banner");
-  		leave_function();
+
   		return 0;
   	}
   }
-  leave_function();
+
   return ret;
 }
 
@@ -142,7 +142,7 @@ int ssh_send_banner(ssh_session session, int server) {
   char buffer[128] = {0};
   int err=SSH_ERROR;
 
-  enter_function();
+
 
   banner = session->version == 1 ? CLIENTBANNER1 : CLIENTBANNER2;
 
@@ -173,7 +173,7 @@ int ssh_send_banner(ssh_session session, int server) {
 #endif
   err=SSH_OK;
 end:
-  leave_function();
+
   return err;
 }
 
@@ -293,7 +293,7 @@ static int dh_handshake(ssh_session session) {
 
   int rc = SSH_AGAIN;
 
-  enter_function();
+
 
   switch (session->dh_handshake_state) {
     case DH_STATE_INIT:
@@ -323,16 +323,16 @@ static int dh_handshake(ssh_session session) {
     	/* wait until ssh_packet_newkeys is called */
     	break;
     case DH_STATE_FINISHED:
-    	leave_function();
+
       return SSH_OK;
     default:
       ssh_set_error(session, SSH_FATAL, "Invalid state in dh_handshake(): %d",
           session->dh_handshake_state);
-      leave_function();
+
       return SSH_ERROR;
   }
 error:
-  leave_function();
+
   return rc;
 }
 
@@ -345,11 +345,11 @@ SSH_PACKET_CALLBACK(ssh_packet_service_accept){
 	(void)packet;
 	(void)type;
 	(void)user;
-	enter_function();
+
 	session->auth_service_state=SSH_AUTH_SERVICE_ACCEPTED;
 	ssh_log(session, SSH_LOG_PACKET,
 	      "Received SSH_MSG_SERVICE_ACCEPT");
-	leave_function();
+
 	return SSH_PACKET_USED;
 }
 
@@ -371,7 +371,7 @@ SSH_PACKET_CALLBACK(ssh_packet_service_accept){
 int ssh_service_request(ssh_session session, const char *service) {
   ssh_string service_s = NULL;
   int rc=SSH_ERROR;
-  enter_function();
+
   switch(session->auth_service_state){
   	case SSH_AUTH_SERVICE_NONE:
   		if (buffer_add_u8(session->out_buffer, SSH2_MSG_SERVICE_REQUEST) < 0) {
@@ -414,7 +414,7 @@ int ssh_service_request(ssh_session session, const char *service) {
   	  break;
   }
 
-  leave_function();
+
   return rc;
 }
 
@@ -432,7 +432,7 @@ int ssh_service_request(ssh_session session, const char *service) {
  */
 static void ssh_client_connection_callback(ssh_session session){
 	int ssh1,ssh2;
-	enter_function();
+
 	switch(session->session_state){
 		case SSH_SESSION_STATE_NONE:
 		case SSH_SESSION_STATE_CONNECTING:
@@ -525,13 +525,13 @@ static void ssh_client_connection_callback(ssh_session session){
 		default:
 			ssh_set_error(session,SSH_FATAL,"Invalid state %d",session->session_state);
 	}
-	leave_function();
+
 	return;
 	error:
 	ssh_socket_close(session->socket);
 	session->alive = 0;
 	session->session_state=SSH_SESSION_STATE_ERROR;
-	leave_function();
+
 }
 
 /** @internal
@@ -569,7 +569,7 @@ int ssh_connect(ssh_session session) {
     return SSH_ERROR;
   }
 
-  enter_function();
+
   switch(session->pending_call_state){
   case SSH_PENDING_CALL_NONE:
   	break;
@@ -577,26 +577,26 @@ int ssh_connect(ssh_session session) {
   	goto pending;
   default:
   	ssh_set_error(session,SSH_FATAL,"Bad call during pending SSH call in ssh_connect");
-  	leave_function();
+
   	return SSH_ERROR;
   }
   session->alive = 0;
   session->client = 1;
 
   if (ssh_init() < 0) {
-    leave_function();
+
     return SSH_ERROR;
   }
   if (session->fd == SSH_INVALID_SOCKET && session->host == NULL && session->ProxyCommand == NULL) {
     ssh_set_error(session, SSH_FATAL, "Hostname required");
-    leave_function();
+
     return SSH_ERROR;
   }
 
   ret = ssh_options_apply(session);
   if (ret < 0) {
       ssh_set_error(session, SSH_FATAL, "Couldn't apply options");
-      leave_function();
+
       return SSH_ERROR;
   }
   ssh_log(session,SSH_LOG_RARE,"libssh %s, using threading %s", ssh_copyright(), ssh_threads_get_type());
@@ -619,7 +619,7 @@ int ssh_connect(ssh_session session) {
     		session->bindaddr);
   }
   if (ret == SSH_ERROR) {
-    leave_function();
+
     return SSH_ERROR;
   }
 
@@ -645,10 +645,10 @@ pending:
       ssh_handle_packets_termination(session, 0, ssh_connect_termination, session);
   ssh_log(session,SSH_LOG_PACKET,"ssh_connect: Actual state : %d",session->session_state);
   if(!ssh_is_blocking(session) && !ssh_connect_termination(session)){
-    leave_function();
+
     return SSH_AGAIN;
   }
-  leave_function();
+
   session->pending_call_state=SSH_PENDING_CALL_NONE;
   if(session->session_state == SSH_SESSION_STATE_ERROR || session->session_state == SSH_SESSION_STATE_DISCONNECTED)
   	return SSH_ERROR;
@@ -705,7 +705,7 @@ void ssh_disconnect(ssh_session session) {
     return;
   }
 
-  enter_function();
+
 
   if (ssh_socket_is_open(session->socket)) {
     if (buffer_add_u8(session->out_buffer, SSH2_MSG_DISCONNECT) < 0) {
@@ -783,7 +783,7 @@ error:
     session->packet_callbacks=NULL;
   }
 
-  leave_function();
+
 }
 
 const char *ssh_copyright(void) {

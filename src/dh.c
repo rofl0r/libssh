@@ -486,7 +486,7 @@ int dh_build_k(ssh_session session) {
 int ssh_client_dh_init(ssh_session session){
   ssh_string e = NULL;
   int rc;
-  enter_function();
+
   if (buffer_add_u8(session->out_buffer, SSH2_MSG_KEXDH_INIT) < 0) {
     goto error;
   }
@@ -518,7 +518,7 @@ int ssh_client_dh_init(ssh_session session){
     ssh_string_free(e);
   }
 
-  leave_function();
+
   return SSH_ERROR;
 }
 
@@ -589,7 +589,7 @@ int make_sessionid(ssh_session session) {
   uint32_t len;
   int rc = SSH_ERROR;
 
-  enter_function();
+
 
   buf = ssh_buffer_new();
   if (buf == NULL) {
@@ -744,7 +744,7 @@ error:
   ssh_string_free(str);
   ssh_string_free(num);
 
-  leave_function();
+
 
   return rc;
 }
@@ -819,7 +819,7 @@ int generate_session_keys(ssh_session session) {
   struct ssh_crypto_struct *crypto = session->next_crypto;
   int rc = -1;
 
-  enter_function();
+
 
   k_string = make_bignum_string(crypto->k);
   if (k_string == NULL) {
@@ -929,7 +929,7 @@ int generate_session_keys(ssh_session session) {
   rc = 0;
 error:
   ssh_string_free(k_string);
-  leave_function();
+
 
   return rc;
 }
@@ -1140,11 +1140,11 @@ int signature_verify(ssh_session session, ssh_string signature) {
   SIGNATURE *sign = NULL;
   int err;
 
-  enter_function();
+
 
   pubkey = publickey_from_string(session,session->next_crypto->server_pubkey);
   if(pubkey == NULL) {
-    leave_function();
+
     return -1;
   }
 
@@ -1154,7 +1154,7 @@ int signature_verify(ssh_session session, ssh_string signature) {
           "Public key from server (%s) doesn't match user preference (%s)",
           pubkey->type_c, session->wanted_methods[SSH_HOSTKEYS]);
       publickey_free(pubkey);
-      leave_function();
+
       return -1;
     }
   }
@@ -1163,7 +1163,7 @@ int signature_verify(ssh_session session, ssh_string signature) {
   if (sign == NULL) {
     ssh_set_error(session, SSH_FATAL, "Invalid signature blob");
     publickey_free(pubkey);
-    leave_function();
+
     return -1;
   }
 
@@ -1176,7 +1176,7 @@ int signature_verify(ssh_session session, ssh_string signature) {
   session->next_crypto->server_pubkey_type = pubkey->type_c;
   publickey_free(pubkey);
 
-  leave_function();
+
   return err;
 }
 

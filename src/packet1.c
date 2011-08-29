@@ -103,7 +103,7 @@ int ssh_packet_socket_callback1(const void *data, size_t receivedlen, void *user
   uint32_t crc;
   uint32_t len;
   ssh_session session=(ssh_session)user;
-  enter_function();
+
 
   switch (session->packet_state){
     case PACKET_STATE_INIT:
@@ -121,7 +121,7 @@ int ssh_packet_socket_callback1(const void *data, size_t receivedlen, void *user
       }
       /* must have at least enough bytes for size */
       if(receivedlen < sizeof(uint32_t)){
-        leave_function();
+
         return 0;
       }
       memcpy(&len,data,sizeof(uint32_t));
@@ -146,7 +146,7 @@ int ssh_packet_socket_callback1(const void *data, size_t receivedlen, void *user
       to_be_read = len + padding;
       if(to_be_read + processed > receivedlen){
         /* wait for rest of packet */
-        leave_function();
+
         return processed;
       }
       /* it is _not_ possible that to_be_read be < 8. */
@@ -231,7 +231,7 @@ int ssh_packet_socket_callback1(const void *data, size_t receivedlen, void *user
             receivedlen - processed,user);
         processed += rc;
       }
-      leave_function();
+
       return processed;
     case PACKET_STATE_PROCESSING:
       ssh_log(session, SSH_LOG_RARE, "Nested packet processing. Delaying.");
@@ -240,7 +240,7 @@ int ssh_packet_socket_callback1(const void *data, size_t receivedlen, void *user
 
 error:
   session->session_state=SSH_SESSION_STATE_ERROR;
-  leave_function();
+
   return processed;
 }
 
@@ -255,7 +255,7 @@ int packet_send1(ssh_session session) {
   uint32_t crc;
   uint8_t padding;
 
-  enter_function();
+
   ssh_log(session,SSH_LOG_PACKET,"Sending a %d bytes long packet",currentlen);
 
 /* TODO FIXME
@@ -318,7 +318,7 @@ int packet_send1(ssh_session session) {
     rc = SSH_ERROR;
   }
 error:
-  leave_function();
+
   return rc;     /* SSH_OK, AGAIN or ERROR */
 }
 

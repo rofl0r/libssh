@@ -44,7 +44,7 @@ int ssh_client_ecdh_init(ssh_session session){
   int len;
   int rc;
   bignum_CTX ctx=BN_CTX_new();
-  enter_function();
+
   if (buffer_add_u8(session->out_buffer, SSH2_MSG_KEX_ECDH_INIT) < 0) {
     goto error;
   }
@@ -70,7 +70,7 @@ error:
     ssh_string_free(e);
   }
 
-  leave_function();
+
   return SSH_ERROR;
 }
 

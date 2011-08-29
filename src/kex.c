@@ -260,7 +260,7 @@ SSH_PACKET_CALLBACK(ssh_packet_kexinit){
   char *strings[10];
   int i;
 
-  enter_function();
+
   (void)type;
   (void)user;
   memset(strings, 0, sizeof(strings));
@@ -333,7 +333,7 @@ SSH_PACKET_CALLBACK(ssh_packet_kexinit){
     }
   }
 
-  leave_function();
+
   session->session_state=SSH_SESSION_STATE_KEXINIT_RECEIVED;
   session->ssh_connection_callback(session);
   return SSH_PACKET_USED;
@@ -344,7 +344,7 @@ error:
   }
 
   session->session_state = SSH_SESSION_STATE_ERROR;
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -373,12 +373,12 @@ int set_kex(ssh_session session){
     KEX *client=&session->client_kex;
     int i;
     const char *wanted;
-    enter_function();
+
     ssh_get_random(client->cookie,16,0);
     client->methods=malloc(10 * sizeof(char **));
     if (client->methods == NULL) {
       ssh_set_error_oom(session);
-      leave_function();
+
       return -1;
     }
     memset(client->methods,0,10*sizeof(char **));
@@ -389,7 +389,7 @@ int set_kex(ssh_session session){
         if(!client->methods[i] && i < SSH_LANG_C_S){
             ssh_set_error(session,SSH_FATAL,"kex error : did not find one of algos %s in list %s for %s",
             wanted,server->methods[i],ssh_kex_nums[i]);
-            leave_function();
+
             return -1;
         } else {
           if ((i >= SSH_LANG_C_S) && (client->methods[i] == NULL)) {
@@ -406,7 +406,7 @@ int set_kex(ssh_session session){
     } else if(strcmp(client->methods[SSH_KEX], "ecdh-sha2-nistp256") == 0){
       session->next_crypto->kex_type=SSH_KEX_ECDH_SHA2_NISTP256;
     }
-    leave_function();
+
     return 0;
 }
 
@@ -416,7 +416,7 @@ int ssh_send_kex(ssh_session session, int server_kex) {
   ssh_string str = NULL;
   int i;
 
-  enter_function();
+
 
   if (buffer_add_u8(session->out_buffer, SSH2_MSG_KEXINIT) < 0) {
     goto error;
@@ -454,18 +454,18 @@ int ssh_send_kex(ssh_session session, int server_kex) {
   }
 
   if (packet_send(session) == SSH_ERROR) {
-    leave_function();
+
     return -1;
   }
 
-  leave_function();
+
   return 0;
 error:
   buffer_reinit(session->out_buffer);
   buffer_reinit(session->out_hashbuf);
   ssh_string_free(str);
 
-  leave_function();
+
   return -1;
 }
 
@@ -666,7 +666,7 @@ SSH_PACKET_CALLBACK(ssh_packet_publickey1){
   ssh_string enc_session = NULL;
   uint16_t bits;
   int ko;
-  enter_function();
+
   (void)type;
   (void)user;
   ssh_log(session, SSH_LOG_PROTOCOL, "Got a SSH_SMSG_PUBLIC_KEY");
@@ -816,13 +816,13 @@ end:
    publickey_free(srv);
    publickey_free(host);
 
-   leave_function();
+
    return SSH_PACKET_USED;
 }
 
 int ssh_get_kex1(ssh_session session) {
   int ret=SSH_ERROR;
-  enter_function();
+
   ssh_log(session, SSH_LOG_PROTOCOL, "Waiting for a SSH_SMSG_PUBLIC_KEY");
   /* Here the callback is called */
   while(session->session_state==SSH_SESSION_STATE_INITIAL_KEX){
@@ -840,7 +840,7 @@ int ssh_get_kex1(ssh_session session) {
   ssh_log(session, SSH_LOG_PROTOCOL, "received SSH_SMSG_SUCCESS\n");
   ret=SSH_OK;
 error:
-  leave_function();
+
   return ret;
 }
 

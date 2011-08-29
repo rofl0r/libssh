@@ -110,12 +110,12 @@ static char **ssh_get_knownhost_line(ssh_session session, FILE **file,
   char *ptr;
   char **tokens;
 
-  enter_function();
+
 
   if(*file == NULL){
     *file = fopen(filename,"r");
     if (*file == NULL) {
-      leave_function();
+
       return NULL;
     }
   }
@@ -139,7 +139,7 @@ static char **ssh_get_knownhost_line(ssh_session session, FILE **file,
     if (tokens == NULL) {
       fclose(*file);
       *file = NULL;
-      leave_function();
+
       return NULL;
     }
 
@@ -166,7 +166,7 @@ static char **ssh_get_knownhost_line(ssh_session session, FILE **file,
         continue;
       }
     }
-    leave_function();
+
     return tokens;
   }
 
@@ -174,7 +174,7 @@ static char **ssh_get_knownhost_line(ssh_session session, FILE **file,
   *file = NULL;
 
   /* we did not find anything, end of file*/
-  leave_function();
+
   return NULL;
 }
 
@@ -307,16 +307,16 @@ static int match_hashed_host(ssh_session session, const char *host,
   int match;
   unsigned int size;
 
-  enter_function();
+
 
   if (strncmp(sourcehash, "|1|", 3) != 0) {
-  	leave_function();
+
     return 0;
   }
 
   source = strdup(sourcehash + 3);
   if (source == NULL) {
-    leave_function();
+
     return 0;
   }
 
@@ -324,7 +324,7 @@ static int match_hashed_host(ssh_session session, const char *host,
   if (b64hash == NULL) {
     /* Invalid hash */
     SAFE_FREE(source);
-    leave_function();
+
     return 0;
   }
 
@@ -334,7 +334,7 @@ static int match_hashed_host(ssh_session session, const char *host,
   salt = base64_to_bin(source);
   if (salt == NULL) {
     SAFE_FREE(source);
-    leave_function();
+
     return 0;
   }
 
@@ -342,7 +342,7 @@ static int match_hashed_host(ssh_session session, const char *host,
   SAFE_FREE(source);
   if (hash == NULL) {
     ssh_buffer_free(salt);
-    leave_function();
+
     return 0;
   }
 
@@ -350,7 +350,7 @@ static int match_hashed_host(ssh_session session, const char *host,
   if (mac == NULL) {
     ssh_buffer_free(salt);
     ssh_buffer_free(hash);
-    leave_function();
+
     return 0;
   }
   size = sizeof(buffer);
@@ -370,7 +370,7 @@ static int match_hashed_host(ssh_session session, const char *host,
   ssh_log(session, SSH_LOG_PACKET,
       "Matching a hashed host: %s match=%d", host, match);
 
-  leave_function();
+
   return match;
 }
 
@@ -419,13 +419,13 @@ int ssh_is_server_known(ssh_session session) {
   int match;
   int ret = SSH_SERVER_NOT_KNOWN;
 
-  enter_function();
+
 
   if (session->knownhosts == NULL) {
     if (ssh_options_apply(session) < 0) {
       ssh_set_error(session, SSH_REQUEST_DENIED,
           "Can't find a known_hosts file");
-      leave_function();
+
       return SSH_SERVER_FILE_NOT_FOUND;
     }
   }
@@ -433,14 +433,14 @@ int ssh_is_server_known(ssh_session session) {
   if (session->host == NULL) {
     ssh_set_error(session, SSH_FATAL,
         "Can't verify host in known hosts if the hostname isn't known");
-    leave_function();
+
     return SSH_SERVER_ERROR;
   }
 
   if (session->current_crypto == NULL){
   	ssh_set_error(session, SSH_FATAL,
   			"ssh_is_host_known called without cryptographic context");
-  	leave_function();
+
   	return SSH_SERVER_ERROR;
   }
   host = ssh_lowercase(session->host);
@@ -449,7 +449,7 @@ int ssh_is_server_known(ssh_session session) {
     ssh_set_error_oom(session);
     SAFE_FREE(host);
     SAFE_FREE(hostport);
-    leave_function();
+
     return SSH_SERVER_ERROR;
   }
 
@@ -518,7 +518,7 @@ int ssh_is_server_known(ssh_session session) {
   }
 
   /* Return the current state at end of file */
-  leave_function();
+
   return ret;
 }
 

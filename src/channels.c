@@ -146,7 +146,7 @@ SSH_PACKET_CALLBACK(ssh_packet_channel_open_conf){
   ssh_channel channel;
   (void)type;
   (void)user;
-  enter_function();
+
   ssh_log(session,SSH_LOG_PACKET,"Received SSH2_MSG_CHANNEL_OPEN_CONFIRMATION");
 
   buffer_get_u32(packet, &channelid);
@@ -157,7 +157,7 @@ SSH_PACKET_CALLBACK(ssh_packet_channel_open_conf){
         "Unknown channel id %lu",
         (long unsigned int) channelid);
     /* TODO: Set error marking in channel object */
-    leave_function();
+
     return SSH_PACKET_USED;
   }
 
@@ -180,7 +180,7 @@ SSH_PACKET_CALLBACK(ssh_packet_channel_open_conf){
       (long unsigned int) channel->remote_maxpacket);
 
   channel->state = SSH_CHANNEL_STATE_OPEN;
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -247,7 +247,7 @@ static int channel_open(ssh_channel channel, const char *type_c, int window,
   ssh_string type = NULL;
   int err=SSH_ERROR;
 
-  enter_function();
+
   channel->local_channel = ssh_channel_new_id(session);
   channel->local_maxpacket = maxpacket;
   channel->local_window = window;
@@ -259,7 +259,7 @@ static int channel_open(ssh_channel channel, const char *type_c, int window,
   type = ssh_string_from_char(type_c);
   if (type == NULL) {
     ssh_set_error_oom(session);
-    leave_function();
+
     return err;
   }
 
@@ -270,7 +270,7 @@ static int channel_open(ssh_channel channel, const char *type_c, int window,
       buffer_add_u32(session->out_buffer, htonl(channel->local_maxpacket)) < 0) {
     ssh_set_error_oom(session);
     ssh_string_free(type);
-    leave_function();
+
     return err;
   }
 
@@ -279,13 +279,13 @@ static int channel_open(ssh_channel channel, const char *type_c, int window,
   if (payload != NULL) {
     if (buffer_add_buffer(session->out_buffer, payload) < 0) {
       ssh_set_error_oom(session);
-      leave_function();
+
       return err;
     }
   }
 
   if (packet_send(session) == SSH_ERROR) {
-    leave_function();
+
     return err;
   }
 
@@ -307,7 +307,7 @@ static int channel_open(ssh_channel channel, const char *type_c, int window,
   }
   if(channel->state == SSH_CHANNEL_STATE_OPEN)
     err=SSH_OK;
-  leave_function();
+
   return err;
 }
 
@@ -342,13 +342,13 @@ ssh_channel ssh_channel_from_local(ssh_session session, uint32_t id) {
 static int grow_window(ssh_session session, ssh_channel channel, int minimumsize) {
   uint32_t new_window = minimumsize > WINDOWBASE ? minimumsize : WINDOWBASE;
 
-  enter_function();
+
   if(new_window <= channel->local_window){
     ssh_log(session,SSH_LOG_PROTOCOL,
         "growing window (channel %d:%d) to %d bytes : not needed (%d bytes)",
         channel->local_channel, channel->remote_channel, new_window,
         channel->local_window);
-    leave_function();
+
     return SSH_OK;
   }
   /* WINDOW_ADJUST packet needs a relative increment rather than an absolute
@@ -373,12 +373,12 @@ static int grow_window(ssh_session session, ssh_channel channel, int minimumsize
 
   channel->local_window = new_window;
 
-  leave_function();
+
   return SSH_OK;
 error:
   buffer_reinit(session->out_buffer);
 
-  leave_function();
+
   return SSH_ERROR;
 }
 
@@ -427,7 +427,7 @@ SSH_PACKET_CALLBACK(channel_rcv_change_window) {
   int rc;
   (void)user;
   (void)type;
-  enter_function();
+
 
   channel = channel_from_msg(session,packet);
   if (channel == NULL) {
@@ -438,7 +438,7 @@ SSH_PACKET_CALLBACK(channel_rcv_change_window) {
   if (channel == NULL || rc != sizeof(uint32_t)) {
     ssh_log(session, SSH_LOG_PACKET,
         "Error getting a window adjust message: invalid packet");
-    leave_function();
+
     return SSH_PACKET_USED;
   }
 
@@ -452,7 +452,7 @@ SSH_PACKET_CALLBACK(channel_rcv_change_window) {
 
   channel->remote_window += bytes;
 
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -465,7 +465,7 @@ SSH_PACKET_CALLBACK(channel_rcv_data){
   int is_stderr;
   int rest;
   (void)user;
-  enter_function();
+
   if(type==SSH2_MSG_CHANNEL_DATA)
 	  is_stderr=0;
   else
@@ -475,7 +475,7 @@ SSH_PACKET_CALLBACK(channel_rcv_data){
   if (channel == NULL) {
     ssh_log(session, SSH_LOG_FUNCTIONS,
         "%s", ssh_get_error(session));
-    leave_function();
+
     return SSH_PACKET_USED;
   }
 
@@ -488,7 +488,7 @@ SSH_PACKET_CALLBACK(channel_rcv_data){
   str = buffer_get_ssh_string(packet);
   if (str == NULL) {
     ssh_log(session, SSH_LOG_PACKET, "Invalid data packet!");
-    leave_function();
+
     return SSH_PACKET_USED;
   }
   len = ssh_string_len(str);
@@ -511,7 +511,7 @@ SSH_PACKET_CALLBACK(channel_rcv_data){
   if (channel_default_bufferize(channel, ssh_string_data(str), len,
         is_stderr) < 0) {
     ssh_string_free(str);
-    leave_function();
+
     return SSH_PACKET_USED;
   }
 
@@ -545,13 +545,13 @@ SSH_PACKET_CALLBACK(channel_rcv_data){
       }
       if (channel->local_window + buffer_get_rest_len(buf) < WINDOWLIMIT) {
         if (grow_window(session, channel, 0) < 0) {
-          leave_function();
+
           return -1;
         }
       }
   }
 
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -559,12 +559,12 @@ SSH_PACKET_CALLBACK(channel_rcv_eof) {
   ssh_channel channel;
   (void)user;
   (void)type;
-  enter_function();
+
 
   channel = channel_from_msg(session,packet);
   if (channel == NULL) {
     ssh_log(session, SSH_LOG_FUNCTIONS, "%s", ssh_get_error(session));
-    leave_function();
+
     return SSH_PACKET_USED;
   }
 
@@ -581,7 +581,7 @@ SSH_PACKET_CALLBACK(channel_rcv_eof) {
                                                channel->callbacks->userdata);
   }
 
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -589,12 +589,12 @@ SSH_PACKET_CALLBACK(channel_rcv_close) {
 	ssh_channel channel;
 	(void)user;
 	(void)type;
-	enter_function();
+
 
 	channel = channel_from_msg(session,packet);
 	if (channel == NULL) {
 		ssh_log(session, SSH_LOG_FUNCTIONS, "%s", ssh_get_error(session));
-		leave_function();
+
 		return SSH_PACKET_USED;
 	}
 
@@ -628,7 +628,7 @@ SSH_PACKET_CALLBACK(channel_rcv_close) {
                                                  channel->callbacks->userdata);
     }
 
-	leave_function();
+
 	return SSH_PACKET_USED;
 }
 
@@ -640,26 +640,26 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 	(void)user;
 	(void)type;
 
-	enter_function();
+
 
 	channel = channel_from_msg(session,packet);
 	if (channel == NULL) {
 		ssh_log(session, SSH_LOG_FUNCTIONS,"%s", ssh_get_error(session));
-		leave_function();
+
 		return SSH_PACKET_USED;
 	}
 
 	request_s = buffer_get_ssh_string(packet);
 	if (request_s == NULL) {
 		ssh_log(session, SSH_LOG_PACKET, "Invalid MSG_CHANNEL_REQUEST");
-		leave_function();
+
 		return SSH_PACKET_USED;
 	}
 
 	request = ssh_string_to_char(request_s);
 	ssh_string_free(request_s);
 	if (request == NULL) {
-		leave_function();
+
 		return SSH_PACKET_USED;
 	}
 
@@ -678,7 +678,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
                                                      channel->callbacks->userdata);
         }
 
-		leave_function();
+
 		return SSH_PACKET_USED;
 	}
 
@@ -692,14 +692,14 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 		signal_str = buffer_get_ssh_string(packet);
 		if (signal_str == NULL) {
 			ssh_log(session, SSH_LOG_PACKET, "Invalid MSG_CHANNEL_REQUEST");
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
 		sig = ssh_string_to_char(signal_str);
 		ssh_string_free(signal_str);
 		if (sig == NULL) {
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
@@ -713,7 +713,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
                                                      channel->callbacks->userdata);
         }
 
-		leave_function();
+
 		return SSH_PACKET_USED;
 	}
 
@@ -730,14 +730,14 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 		tmp = buffer_get_ssh_string(packet);
 		if (tmp == NULL) {
 			ssh_log(session, SSH_LOG_PACKET, "Invalid MSG_CHANNEL_REQUEST");
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
 		sig = ssh_string_to_char(tmp);
 		ssh_string_free(tmp);
 		if (sig == NULL) {
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
@@ -750,7 +750,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 		if (tmp == NULL) {
 			ssh_log(session, SSH_LOG_PACKET, "Invalid MSG_CHANNEL_REQUEST");
             SAFE_FREE(sig);
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
@@ -758,7 +758,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 		ssh_string_free(tmp);
 		if (errmsg == NULL) {
             SAFE_FREE(sig);
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
@@ -767,7 +767,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 			ssh_log(session, SSH_LOG_PACKET, "Invalid MSG_CHANNEL_REQUEST");
             SAFE_FREE(errmsg);
             SAFE_FREE(sig);
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
@@ -776,7 +776,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 		if (lang == NULL) {
             SAFE_FREE(errmsg);
             SAFE_FREE(sig);
-			leave_function();
+
 			return SSH_PACKET_USED;
 		}
 
@@ -793,7 +793,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
         SAFE_FREE(errmsg);
 		SAFE_FREE(sig);
 
-		leave_function();
+
 		return SSH_PACKET_USED;
 	}
 	if(strcmp(request,"keepalive@openssh.com")==0){
@@ -802,7 +802,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 	  buffer_add_u8(session->out_buffer, SSH2_MSG_CHANNEL_FAILURE);
 	  buffer_add_u32(session->out_buffer, htonl(channel->remote_channel));
 	  packet_send(session);
-	  leave_function();
+
 	  return SSH_PACKET_USED;
 	}
 
@@ -814,7 +814,7 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
 
 	SAFE_FREE(request);
 
-	leave_function();
+
 	return SSH_PACKET_USED;
 }
 
@@ -948,7 +948,7 @@ int ssh_channel_open_forward(ssh_channel channel, const char *remotehost,
       return rc;
   }
 
-  enter_function();
+
 
   payload = ssh_buffer_new();
   if (payload == NULL) {
@@ -990,7 +990,7 @@ error:
   ssh_buffer_free(payload);
   ssh_string_free(str);
 
-  leave_function();
+
   return rc;
 }
 
@@ -1010,7 +1010,7 @@ void ssh_channel_free(ssh_channel channel) {
   }
 
   session = channel->session;
-  enter_function();
+
 
   if (session->alive && channel->state == SSH_CHANNEL_STATE_OPEN) {
     ssh_channel_close(channel);
@@ -1036,7 +1036,7 @@ void ssh_channel_free(ssh_channel channel) {
   memset(channel, 'X', sizeof(struct ssh_channel_struct));
   SAFE_FREE(channel);
 
-  leave_function();
+
 }
 
 /**
@@ -1060,7 +1060,7 @@ int ssh_channel_send_eof(ssh_channel channel){
   }
 
   session = channel->session;
-  enter_function();
+
 
   if (buffer_add_u8(session->out_buffer, SSH2_MSG_CHANNEL_EOF) < 0) {
     ssh_set_error_oom(session);
@@ -1078,12 +1078,12 @@ int ssh_channel_send_eof(ssh_channel channel){
 
   channel->local_eof = 1;
 
-  leave_function();
+
   return rc;
 error:
   buffer_reinit(session->out_buffer);
 
-  leave_function();
+
   return rc;
 }
 
@@ -1109,14 +1109,14 @@ int ssh_channel_close(ssh_channel channel){
   }
 
   session = channel->session;
-  enter_function();
+
 
   if (channel->local_eof == 0) {
     rc = ssh_channel_send_eof(channel);
   }
 
   if (rc != SSH_OK) {
-    leave_function();
+
     return rc;
   }
 
@@ -1136,12 +1136,12 @@ int ssh_channel_close(ssh_channel channel){
     channel->state=SSH_CHANNEL_STATE_CLOSED;
   }
 
-  leave_function();
+
   return rc;
 error:
   buffer_reinit(session->out_buffer);
 
-  leave_function();
+
   return rc;
 }
 
@@ -1160,7 +1160,7 @@ int channel_write_common(ssh_channel channel, const void *data,
       ssh_set_error_invalid(session, __FUNCTION__);
       return -1;
   }
-  enter_function();
+
 
   /*
    * Handle the max packet len from remote side, be nice
@@ -1173,20 +1173,20 @@ int channel_write_common(ssh_channel channel, const void *data,
         "Can't write to channel %d:%d  after EOF was sent",
         channel->local_channel,
         channel->remote_channel);
-    leave_function();
+
     return -1;
   }
 
   if (channel->state != SSH_CHANNEL_STATE_OPEN || channel->delayed_close != 0) {
     ssh_set_error(session, SSH_REQUEST_DENIED, "Remote channel is closed");
-    leave_function();
+
     return -1;
   }
 
 #ifdef WITH_SSH1
   if (channel->version == 1) {
     int rc = channel_write1(channel, data, len);
-    leave_function();
+
     return rc;
   }
 #endif
@@ -1230,7 +1230,7 @@ int channel_write_common(ssh_channel channel, const void *data,
     }
 
     if (packet_send(session) == SSH_ERROR) {
-      leave_function();
+
       return SSH_ERROR;
     }
 
@@ -1244,12 +1244,12 @@ int channel_write_common(ssh_channel channel, const void *data,
 
 noerror:
 
-  leave_function();
+
   return ((int)origlen - (int)len);
 error:
   buffer_reinit(session->out_buffer);
 
-  leave_function();
+
   return SSH_ERROR;
 }
 
@@ -1355,11 +1355,11 @@ SSH_PACKET_CALLBACK(ssh_packet_channel_success){
   ssh_channel channel;
   (void)type;
   (void)user;
-  enter_function();
+
   channel=channel_from_msg(session,packet);
   if (channel == NULL) {
     ssh_log(session, SSH_LOG_FUNCTIONS, "%s", ssh_get_error(session));
-    leave_function();
+
     return SSH_PACKET_USED;
   }
 
@@ -1374,7 +1374,7 @@ SSH_PACKET_CALLBACK(ssh_packet_channel_success){
     channel->request_state=SSH_CHANNEL_REQ_STATE_ACCEPTED;
   }
 
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -1389,11 +1389,11 @@ SSH_PACKET_CALLBACK(ssh_packet_channel_failure){
   ssh_channel channel;
   (void)type;
   (void)user;
-  enter_function();
+
   channel=channel_from_msg(session,packet);
   if (channel == NULL) {
     ssh_log(session, SSH_LOG_FUNCTIONS, "%s", ssh_get_error(session));
-    leave_function();
+
     return SSH_PACKET_USED;
   }
 
@@ -1407,7 +1407,7 @@ SSH_PACKET_CALLBACK(ssh_packet_channel_failure){
   } else {
     channel->request_state=SSH_CHANNEL_REQ_STATE_DENIED;
   }
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -1417,10 +1417,10 @@ static int channel_request(ssh_channel channel, const char *request,
   ssh_string req = NULL;
   int rc = SSH_ERROR;
 
-  enter_function();
+
   if(channel->request_state != SSH_CHANNEL_REQ_STATE_NONE){
   	ssh_set_error(session,SSH_REQUEST_DENIED,"channel_request_* used in incorrect state");
-  	leave_function();
+
   	return SSH_ERROR;
   }
 
@@ -1448,7 +1448,7 @@ static int channel_request(ssh_channel channel, const char *request,
   }
   channel->request_state = SSH_CHANNEL_REQ_STATE_PENDING;
   if (packet_send(session) == SSH_ERROR) {
-    leave_function();
+
     return rc;
   }
 
@@ -1456,7 +1456,7 @@ static int channel_request(ssh_channel channel, const char *request,
       "Sent a SSH_MSG_CHANNEL_REQUEST %s", request);
   if (reply == 0) {
     channel->request_state = SSH_CHANNEL_REQ_STATE_NONE;
-    leave_function();
+
     return SSH_OK;
   }
   while(channel->request_state == SSH_CHANNEL_REQ_STATE_PENDING){
@@ -1490,13 +1490,13 @@ static int channel_request(ssh_channel channel, const char *request,
       break;
   }
   channel->request_state=SSH_CHANNEL_REQ_STATE_NONE;
-  leave_function();
+
   return rc;
 error:
   buffer_reinit(session->out_buffer);
   ssh_string_free(req);
 
-  leave_function();
+
   return rc;
 }
 
@@ -1528,11 +1528,11 @@ int ssh_channel_request_pty_size(ssh_channel channel, const char *terminal,
       return rc;
   }
 
-  enter_function();
+
 #ifdef WITH_SSH1
   if (channel->version==1) {
     channel_request_pty_size1(channel,terminal, col, row);
-    leave_function();
+
     return rc;
     }
 #endif
@@ -1564,7 +1564,7 @@ error:
   ssh_buffer_free(buffer);
   ssh_string_free(term);
 
-  leave_function();
+
   return rc;
 }
 
@@ -1601,12 +1601,12 @@ int ssh_channel_change_pty_size(ssh_channel channel, int cols, int rows) {
   ssh_buffer buffer = NULL;
   int rc = SSH_ERROR;
 
-  enter_function();
+
 
 #ifdef WITH_SSH1
   if (channel->version == 1) {
     rc = channel_change_pty_size1(channel,cols,rows);
-    leave_function();
+
     return rc;
   }
 #endif
@@ -1629,7 +1629,7 @@ int ssh_channel_change_pty_size(ssh_channel channel, int cols, int rows) {
 error:
   ssh_buffer_free(buffer);
 
-  leave_function();
+
   return rc;
 }
 
@@ -1861,7 +1861,7 @@ SSH_PACKET_CALLBACK(ssh_request_success){
   (void)type;
   (void)user;
   (void)packet;
-  enter_function();
+
 
   ssh_log(session, SSH_LOG_PACKET,
       "Received SSH_REQUEST_SUCCESS");
@@ -1872,7 +1872,7 @@ SSH_PACKET_CALLBACK(ssh_request_success){
     session->global_req_state=SSH_CHANNEL_REQ_STATE_ACCEPTED;
   }
 
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -1886,7 +1886,7 @@ SSH_PACKET_CALLBACK(ssh_request_denied){
   (void)type;
   (void)user;
   (void)packet;
-  enter_function();
+
 
   ssh_log(session, SSH_LOG_PACKET,
       "Received SSH_REQUEST_FAILURE");
@@ -1897,7 +1897,7 @@ SSH_PACKET_CALLBACK(ssh_request_denied){
     session->global_req_state=SSH_CHANNEL_REQ_STATE_DENIED;
   }
 
-  leave_function();
+
   return SSH_PACKET_USED;
 
 }
@@ -1923,10 +1923,10 @@ static int global_request(ssh_session session, const char *request,
   ssh_string req = NULL;
   int rc = SSH_ERROR;
 
-  enter_function();
+
   if(session->global_req_state != SSH_CHANNEL_REQ_STATE_NONE){
     ssh_set_error(session,SSH_FATAL,"Invalid state in start of global_request()");
-    leave_function();
+
     return rc;
   }
   req = ssh_string_from_char(request);
@@ -1953,7 +1953,7 @@ static int global_request(ssh_session session, const char *request,
   }
   session->global_req_state = SSH_CHANNEL_REQ_STATE_PENDING;
   if (packet_send(session) == SSH_ERROR) {
-    leave_function();
+
     return rc;
   }
 
@@ -1961,7 +1961,7 @@ static int global_request(ssh_session session, const char *request,
       "Sent a SSH_MSG_GLOBAL_REQUEST %s", request);
   if (reply == 0) {
     session->global_req_state=SSH_CHANNEL_REQ_STATE_NONE;
-    leave_function();
+
     return SSH_OK;
   }
   while(session->global_req_state == SSH_CHANNEL_REQ_STATE_PENDING){
@@ -1991,11 +1991,11 @@ static int global_request(ssh_session session, const char *request,
 
   }
 
-  leave_function();
+
   return rc;
 error:
   ssh_string_free(req);
-  leave_function();
+
   return rc;
 }
 
@@ -2355,30 +2355,30 @@ int channel_read_buffer(ssh_channel channel, ssh_buffer buffer, uint32_t count,
       return SSH_ERROR;
   }
 
-  enter_function();
+
   buffer_reinit(buffer);
   if(count==0){
     do {
       r=ssh_channel_poll(channel, is_stderr);
       if(r < 0){
-        leave_function();
+
         return r;
       }
       if(r > 0){
         r=ssh_channel_read(channel, buffer_tmp, r, is_stderr);
         if(r < 0){
-          leave_function();
+
           return r;
         }
         if(buffer_add_data(buffer,buffer_tmp,r) < 0){
 	  ssh_set_error_oom(session);
 	  r = SSH_ERROR;
 	}
-        leave_function();
+
         return r;
       }
       if(ssh_channel_is_eof(channel)){
-        leave_function();
+
         return 0;
       }
       ssh_handle_packets(channel->session, -2);
@@ -2387,21 +2387,21 @@ int channel_read_buffer(ssh_channel channel, ssh_buffer buffer, uint32_t count,
   while(total < count){
     r=ssh_channel_read(channel, buffer_tmp, sizeof(buffer_tmp), is_stderr);
     if(r<0){
-      leave_function();
+
       return r;
     }
     if(r==0){
-      leave_function();
+
       return total;
     }
     if(buffer_add_data(buffer,buffer_tmp,r) < 0){
       ssh_set_error_oom(session);
-      leave_function();
+
       return SSH_ERROR;
     }
     total += r;
   }
-  leave_function();
+
   return total;
 }
 
@@ -2442,10 +2442,10 @@ int ssh_channel_read(ssh_channel channel, void *dest, uint32_t count, int is_std
 
   session = channel->session;
   stdbuf = channel->stdout_buffer;
-  enter_function();
+
 
   if (count == 0) {
-    leave_function();
+
     return 0;
   }
 
@@ -2465,7 +2465,7 @@ int ssh_channel_read(ssh_channel channel, void *dest, uint32_t count, int is_std
 
   if (count > buffer_get_rest_len(stdbuf) + channel->local_window) {
     if (grow_window(session, channel, count - buffer_get_rest_len(stdbuf)) < 0) {
-      leave_function();
+
       return -1;
     }
   }
@@ -2475,7 +2475,7 @@ int ssh_channel_read(ssh_channel channel, void *dest, uint32_t count, int is_std
   */
   while (buffer_get_rest_len(stdbuf) == 0 && count > 0) {
     if (channel->remote_eof && buffer_get_rest_len(stdbuf) == 0) {
-      leave_function();
+
       return 0;
     }
 
@@ -2501,12 +2501,12 @@ int ssh_channel_read(ssh_channel channel, void *dest, uint32_t count, int is_std
   /* Authorize some buffering while userapp is busy */
   if (channel->local_window < WINDOWLIMIT) {
     if (grow_window(session, channel, 0) < 0) {
-      leave_function();
+
       return -1;
     }
   }
 
-  leave_function();
+
   return len;
 }
 
@@ -2546,12 +2546,12 @@ int ssh_channel_read_nonblocking(ssh_channel channel, void *dest, uint32_t count
   }
 
   session = channel->session;
-  enter_function();
+
 
   to_read = ssh_channel_poll(channel, is_stderr);
 
   if (to_read <= 0) {
-    leave_function();
+
     return to_read; /* may be an error code */
   }
 
@@ -2560,7 +2560,7 @@ int ssh_channel_read_nonblocking(ssh_channel channel, void *dest, uint32_t count
   }
   rc = ssh_channel_read(channel, dest, to_read, is_stderr);
 
-  leave_function();
+
   return rc;
 }
 
@@ -2588,7 +2588,7 @@ int ssh_channel_poll(ssh_channel channel, int is_stderr){
 
   session = channel->session;
   stdbuf = channel->stdout_buffer;
-  enter_function();
+
 
   if (is_stderr) {
     stdbuf = channel->stderr_buffer;
@@ -2596,22 +2596,22 @@ int ssh_channel_poll(ssh_channel channel, int is_stderr){
 
   if (buffer_get_rest_len(stdbuf) == 0 && channel->remote_eof == 0) {
     if (ssh_handle_packets(channel->session, 0)==SSH_ERROR) {
-      leave_function();
+
       return SSH_ERROR;
     }
   }
 
   if (buffer_get_rest_len(stdbuf) > 0){
-    leave_function();
+
   	return buffer_get_rest_len(stdbuf);
   }
 
   if (channel->remote_eof) {
-    leave_function();
+
     return SSH_EOF;
   }
 
-  leave_function();
+
   return buffer_get_rest_len(stdbuf);
 }
 
@@ -2935,7 +2935,7 @@ int ssh_channel_open_reverse_forward(ssh_channel channel, const char *remotehost
 
   session = channel->session;
 
-  enter_function();
+
 
   payload = ssh_buffer_new();
   if (payload == NULL) {
@@ -2977,7 +2977,7 @@ error:
   ssh_buffer_free(payload);
   ssh_string_free(str);
 
-  leave_function();
+
   return rc;
 }
 
@@ -3014,7 +3014,7 @@ int ssh_channel_open_x11(ssh_channel channel,
 
   session = channel->session;
 
-  enter_function();
+
 
   payload = ssh_buffer_new();
   if (payload == NULL) {
@@ -3044,7 +3044,7 @@ error:
   ssh_buffer_free(payload);
   ssh_string_free(str);
 
-  leave_function();
+
   return rc;
 }
 

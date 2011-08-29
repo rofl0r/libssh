@@ -150,7 +150,7 @@ SSH_PACKET_CALLBACK(ssh_packet_kexdh_init){
   ssh_string_free(e);
 
   error:
-  leave_function();
+
   return SSH_PACKET_USED;
 }
 
@@ -270,7 +270,7 @@ static int dh_handshake_server(ssh_session session) {
  */
 static void ssh_server_connection_callback(ssh_session session){
 	int ssh1,ssh2;
-	enter_function();
+
 	switch(session->session_state){
 		case SSH_SESSION_STATE_NONE:
 		case SSH_SESSION_STATE_CONNECTING:
@@ -377,13 +377,13 @@ static void ssh_server_connection_callback(ssh_session session){
 		default:
 			ssh_set_error(session,SSH_FATAL,"Invalid state %d",session->session_state);
 	}
-	leave_function();
+
 	return;
 	error:
 	ssh_socket_close(session->socket);
 	session->alive = 0;
 	session->session_state=SSH_SESSION_STATE_ERROR;
-	leave_function();
+
 }
 
 /**
@@ -404,7 +404,7 @@ static int callback_receive_banner(const void *data, size_t len, void *user) {
     size_t i;
     int ret=0;
 
-    enter_function();
+
 
     for (i = 0; i < len; i++) {
 #ifdef WITH_PCAP
@@ -431,7 +431,7 @@ static int callback_receive_banner(const void *data, size_t len, void *user) {
             ssh_log(session, SSH_LOG_PACKET, "Received banner: %s", str);
             session->ssh_connection_callback(session);
 
-            leave_function();
+
             return ret;
         }
 
@@ -440,12 +440,12 @@ static int callback_receive_banner(const void *data, size_t len, void *user) {
             session->session_state = SSH_SESSION_STATE_ERROR;
             ssh_set_error(session, SSH_FATAL, "Receiving banner: too large banner");
 
-            leave_function();
+
             return 0;
         }
     }
 
-    leave_function();
+
     return ret;
 }
 
@@ -500,7 +500,7 @@ static int ssh_message_auth_reply_default(ssh_message msg,int partial) {
   ssh_string methods = NULL;
   int rc = SSH_ERROR;
 
-  enter_function();
+
 
   if (buffer_add_u8(session->out_buffer, SSH2_MSG_USERAUTH_FAILURE) < 0) {
     return rc;
@@ -551,7 +551,7 @@ static int ssh_message_auth_reply_default(ssh_message msg,int partial) {
 error:
   ssh_string_free(methods);
 
-  leave_function();
+
   return rc;
 }
 

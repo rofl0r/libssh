@@ -35,13 +35,13 @@
 
 #ifdef WITH_SSH1
 static int wait_auth1_status(ssh_session session) {
-  enter_function();
+
   /* wait for a packet */
   while(session->auth_state == SSH_AUTH_STATE_NONE)
     if (ssh_handle_packets(session, -2) != SSH_OK)
       break;
   ssh_log(session,SSH_LOG_PROTOCOL,"Auth state : %d",session->auth_state);
-  leave_function();
+
   switch(session->auth_state) {
     case SSH_AUTH_STATE_SUCCESS:
       return SSH_AUTH_SUCCESS;
@@ -131,8 +131,8 @@ int ssh_userauth1_offer_pubkey(ssh_session session, const char *username,
   (void) username;
   (void) type;
   (void) pubkey;
-  enter_function();
-  leave_function();
+
+
   return SSH_AUTH_DENIED;
 }
 
@@ -140,10 +140,10 @@ int ssh_userauth1_password(ssh_session session, const char *username,
     const char *password) {
   ssh_string pwd = NULL;
   int rc;
-  enter_function();
+
   rc = send_username(session, username);
   if (rc != SSH_AUTH_DENIED) {
-    leave_function();
+
     return rc;
   }
 
@@ -158,7 +158,7 @@ int ssh_userauth1_password(ssh_session session, const char *username,
     /* not risky to disclose the size of such a big password .. */
     pwd = ssh_string_from_char(password);
     if (pwd == NULL) {
-      leave_function();
+
       return SSH_AUTH_ERROR;
     }
   } else {
@@ -170,7 +170,7 @@ int ssh_userauth1_password(ssh_session session, const char *username,
      */
     pwd = ssh_string_new(128);
     if (pwd == NULL) {
-      leave_function();
+
       return SSH_AUTH_ERROR;
     }
     ssh_get_random( pwd->string, 128, 0);
@@ -180,13 +180,13 @@ int ssh_userauth1_password(ssh_session session, const char *username,
   if (buffer_add_u8(session->out_buffer, SSH_CMSG_AUTH_PASSWORD) < 0) {
     ssh_string_burn(pwd);
     ssh_string_free(pwd);
-    leave_function();
+
     return SSH_AUTH_ERROR;
   }
   if (buffer_add_ssh_string(session->out_buffer, pwd) < 0) {
     ssh_string_burn(pwd);
     ssh_string_free(pwd);
-    leave_function();
+
     return SSH_AUTH_ERROR;
   }
 
@@ -194,11 +194,11 @@ int ssh_userauth1_password(ssh_session session, const char *username,
   ssh_string_free(pwd);
   session->auth_state=SSH_AUTH_STATE_NONE;
   if (packet_send(session) == SSH_ERROR) {
-    leave_function();
+
     return SSH_AUTH_ERROR;
   }
   rc = wait_auth1_status(session);
-  leave_function();
+
   return rc;
 }
 
