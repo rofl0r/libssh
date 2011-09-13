@@ -1460,8 +1460,8 @@ static int channel_request(ssh_channel channel, const char *request,
     return SSH_OK;
   }
   while(channel->request_state == SSH_CHANNEL_REQ_STATE_PENDING){
-    ssh_handle_packets(session, -2);
-    if(session->session_state == SSH_SESSION_STATE_ERROR) {
+    rc = ssh_handle_packets(session, -2);
+    if(session->session_state == SSH_SESSION_STATE_ERROR || rc != SSH_OK) {
 	channel->request_state = SSH_CHANNEL_REQ_STATE_ERROR;
 	break;
     }
