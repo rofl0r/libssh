@@ -1125,6 +1125,7 @@ SSH_PACKET_CALLBACK(ssh_packet_global_request){
     (void)user;
     (void)type;
     (void)packet;
+    int ret = SSH_PACKET_USED;
 
     request_s = buffer_get_ssh_string(packet);
     if (request_s != NULL) {
@@ -1185,12 +1186,13 @@ SSH_PACKET_CALLBACK(ssh_packet_global_request){
         }
     } else {
         ssh_log(session, SSH_LOG_PROTOCOL, "UNKNOWN SSH_MSG_GLOBAL_REQUEST %s %d", request, want_reply);
+        ret = SSH_PACKET_NOT_USED;
     }
 
     SAFE_FREE(msg);
     SAFE_FREE(request);
     SAFE_FREE(bind_addr);
-    return SSH_PACKET_USED;
+    return ret;
 }
 
 #endif /* WITH_SERVER */
