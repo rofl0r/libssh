@@ -28,6 +28,9 @@ clean:
 	rm -f $(ALL_LIBS)
 
 %.o: %.c
+	$(CC) $(CFLAGS) $(ALL_INCLUDES) -c -o $@ $<
+
+%.lo: %.c
 	$(CC) $(CFLAGS) $(SOFLAGS) $(ALL_INCLUDES) -c -o $@ $<
 
 $(ANAME): $(OBJS)
@@ -35,8 +38,8 @@ $(ANAME): $(OBJS)
 	$(AR) rc $@ $(OBJS)
 	$(RANLIB) $@
 
-$(SONAME): $(OBJS)
-	${CC} $(SOFLAGS)  -Wl,-soname=$(SONAME) -o $(SONAME) $(OBJS) $(ALL_LINKS)
+$(SONAME): $(LOBJS)
+	${CC} $(SOFLAGS) $(CFLAGS) -Wl,-soname=$(SONAME) -o $(SONAME) $(LOBJS) $(ALL_LINKS)
 
 
 .PHONY: all clean 
