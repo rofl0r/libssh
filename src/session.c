@@ -147,6 +147,10 @@ err:
     return NULL;
 }
 
+/**
+ * @brief get the server banner
+ * @param[in] session   The SSH session
+ */
 const char* ssh_get_banner(ssh_session session) {
 	if(!session) return NULL;
 	return session->serverbanner;
