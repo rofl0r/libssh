@@ -339,6 +339,7 @@ LIBSSH_API int ssh_channel_is_closed(ssh_channel channel);
 LIBSSH_API int ssh_channel_is_eof(ssh_channel channel);
 LIBSSH_API int ssh_channel_is_open(ssh_channel channel);
 LIBSSH_API ssh_channel ssh_channel_new(ssh_session session);
+LIBSSH_API ssh_buffer ssh_channel_get_buffer(ssh_channel channel, int is_stderr);
 LIBSSH_API int ssh_channel_open_forward(ssh_channel channel, const char *remotehost,
     int remoteport, const char *sourcehost, int localport);
 LIBSSH_API int ssh_channel_open_session(ssh_channel channel);

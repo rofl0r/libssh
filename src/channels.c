@@ -121,6 +121,22 @@ ssh_channel ssh_channel_new(ssh_session session) {
 }
 
 /**
+ * @brief provides access to the stdout/stderr buffers of the session
+ * 
+ * @param[in] session The SSH channel
+ * 
+ * @param[in] is_stderr 0 for stdout, 1 for stderr
+ * 
+ * @return ssh_buffer pointing to either stdout, stderr, or NULL if no session was passed.
+ */
+ssh_buffer ssh_channel_get_buffer(ssh_channel channel, int is_stderr) {
+	if(channel) {
+		return is_stderr ? channel->stderr_buffer : channel->stdout_buffer;
+	}
+	return NULL;
+}
+
+/**
  * @internal
  *
  * @brief Create a new channel identifier.
