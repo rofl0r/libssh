@@ -328,6 +328,9 @@ enum ssh_scp_request_types {
   SSH_SCP_REQUEST_WARNING
 };
 
+LIBSSH_API uint32_t ssh_buffer_get_size(ssh_buffer buffer);
+LIBSSH_API const char* ssh_buffer_get_data(ssh_buffer buffer);
+
 LIBSSH_API int ssh_blocking_flush(ssh_session session, int timeout);
 LIBSSH_API ssh_channel ssh_channel_accept_x11(ssh_channel channel, int timeout_ms);
 LIBSSH_API int ssh_channel_change_pty_size(ssh_channel channel,int cols,int rows);

@@ -109,6 +109,29 @@ void ssh_buffer_free(struct ssh_buffer_struct *buffer) {
   SAFE_FREE(buffer);
 }
 
+/**
+ * @brief get the size of a ssh_buffer
+ * 
+ * @param[in] buffer the ssh buffer
+ * 
+ * @returns the count of used bytes in the buffer
+ */
+uint32_t ssh_buffer_get_size(ssh_buffer buffer) {
+	return buffer ? buffer->used : 0;
+}
+
+/**
+ * @brief get the data pointer of a ssh_buffer, handle with care
+ * and be sure to check ssh_buffer_get_size first
+ * 
+ * @param[in] buffer the ssh buffer
+ * 
+ * @returns a pointer to the buffer contents or NULL
+ */
+const char* ssh_buffer_get_data(ssh_buffer buffer) {
+	return buffer ? buffer->data : NULL;
+}
+
 static int realloc_buffer(struct ssh_buffer_struct *buffer, int needed) {
   int smallest = 1;
   char *new = NULL;
