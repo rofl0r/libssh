@@ -826,56 +826,41 @@ SSH_PACKET_CALLBACK(channel_rcv_request) {
  */
 int channel_default_bufferize(ssh_channel channel, void *data, int len,
     int is_stderr) {
-  ssh_session session;
+	ssh_session session;
+	ssh_buffer* dest;
 
-  if(channel == NULL) {
-      return -1;
-  }
+	if(channel == NULL) {
+		return -1;
+	}
 
-  session = channel->session;
+	session = channel->session;
 
-  if(data == NULL) {
-      ssh_set_error_invalid(session, __FUNCTION__);
-      return -1;
-  }
+	if(data == NULL) {
+		ssh_set_error_invalid(session, __FUNCTION__);
+		return -1;
+	}
 
-  ssh_log(session, SSH_LOG_RARE,
-      "placing %d bytes into channel buffer (stderr=%d)", len, is_stderr);
-  if (is_stderr == 0) {
-    /* stdout */
-    if (channel->stdout_buffer == NULL) {
-      channel->stdout_buffer = ssh_buffer_new();
-      if (channel->stdout_buffer == NULL) {
-        ssh_set_error_oom(session);
-        return -1;
-      }
-    }
+	ssh_log(session, SSH_LOG_RARE,
+		"placing %d bytes into channel buffer (stderr ? %d)", len, is_stderr);
+  
+	dest = is_stderr ? &channel->stderr_buffer : &channel->stdout_buffer;
+  
+	if (*dest == NULL) {
+		*dest = ssh_buffer_new();
+		if (*dest == NULL) {
+			ssh_set_error_oom(session);
+			return -1;
+		}
+	}
 
-    if (buffer_add_data(channel->stdout_buffer, data, len) < 0) {
-      ssh_set_error_oom(session);
-      ssh_buffer_free(channel->stdout_buffer);
-      channel->stdout_buffer = NULL;
-      return -1;
-    }
-  } else {
-    /* stderr */
-    if (channel->stderr_buffer == NULL) {
-      channel->stderr_buffer = ssh_buffer_new();
-      if (channel->stderr_buffer == NULL) {
-        ssh_set_error_oom(session);
-        return -1;
-      }
-    }
+	if (buffer_add_data(*dest, data, len) < 0) {
+		ssh_set_error_oom(session);
+		ssh_buffer_free(*dest);
+		*dest = NULL;
+		return -1;
+	}
 
-    if (buffer_add_data(channel->stderr_buffer, data, len) < 0) {
-      ssh_set_error_oom(session);
-      ssh_buffer_free(channel->stderr_buffer);
-      channel->stderr_buffer = NULL;
-      return -1;
-    }
-  }
-
-  return 0;
+	return 0;
 }
 
 /**
