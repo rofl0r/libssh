@@ -159,6 +159,7 @@ void agent_free(ssh_agent agent) {
     if (agent->sock) {
       agent_close(agent);
       ssh_socket_free(agent->sock);
+	agent->sock = NULL;
     }
     SAFE_FREE(agent);
   }

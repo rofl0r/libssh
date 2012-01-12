@@ -191,16 +191,21 @@ void ssh_free(ssh_session session) {
   session->in_buffer=session->out_buffer=NULL;
   crypto_free(session->current_crypto);
   crypto_free(session->next_crypto);
-  ssh_socket_free(session->socket);
+  
   if(session->default_poll_ctx){
   	ssh_poll_ctx_free(session->default_poll_ctx);
   }
+  
+  ssh_socket_free(session->socket);
+  session->socket = NULL;
+  
   /* delete all channels */
   while (session->channels) {
     ssh_channel_free(session->channels);
   }
 #ifndef _WIN32
   agent_free(session->agent);
+  session->agent = NULL;
 #endif /* _WIN32 */
   if (session->client_kex.methods) {
     for (i = 0; i < 10; i++) {
