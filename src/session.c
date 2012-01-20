@@ -36,7 +36,7 @@
 #include "libssh/buffer.h"
 #include "libssh/poll.h"
 
-#define FIRST_CHANNEL 42 // why not ? it helps to find bugs.
+#define FIRST_CHANNEL 0 // why not 42? because some endpoints have a broken impl...
 
 /**
  * @defgroup libssh_session The SSH session functions.

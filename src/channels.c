@@ -146,7 +146,7 @@ ssh_buffer ssh_channel_get_buffer(ssh_channel channel, int is_stderr) {
  * @return              The new channel identifier.
  */
 uint32_t ssh_channel_new_id(ssh_session session) {
-  return ++(session->maxchannel);
+  return (session->maxchannel)++;
 }
 
 /**
