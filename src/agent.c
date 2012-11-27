@@ -302,6 +302,7 @@ int agent_get_ident_count(struct ssh_session_struct *session) {
     return 0;
   }
   ssh_buffer_free(request);
+	request = 0;
 
   /* get message type and verify the answer */
   buffer_get_u8(reply, (uint8_t *) &type);
@@ -388,6 +389,7 @@ struct ssh_public_key_struct *agent_get_next_ident(struct ssh_session_struct *se
       /* get key from blob */
       pubkey = publickey_from_string(session, blob);
       ssh_string_free(blob);
+	blob = 0;
       break;
     default:
       return NULL;
@@ -439,6 +441,7 @@ ssh_string agent_sign_data(struct ssh_session_struct *session,
   }
 
   ssh_string_free(blob);
+	blob = 0;
 
   reply = ssh_buffer_new();
   if (reply == NULL) {
@@ -451,6 +454,7 @@ ssh_string agent_sign_data(struct ssh_session_struct *session,
     return NULL;
   }
   ssh_buffer_free(request);
+	request = 0;
 
   /* check if reply is valid */
   if (buffer_get_u8(reply, (uint8_t *) &type) != sizeof(uint8_t)) {
