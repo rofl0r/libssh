@@ -694,7 +694,7 @@ char *ssh_path_expand_escape(ssh_session session, const char *s) {
         return NULL;
     }
 
-    if (strlen(r) > MAX_BUF_SIZE) {
+    if (strlen(r) >= MAX_BUF_SIZE) {
         ssh_set_error(session, SSH_FATAL, "string to expand too long");
         free(r);
         return NULL;
@@ -707,8 +707,9 @@ char *ssh_path_expand_escape(ssh_session session, const char *s) {
         if (*p != '%') {
             buf[i] = *p;
             i++;
-            if (i > MAX_BUF_SIZE) {
-                return NULL;
+            if (i >= MAX_BUF_SIZE) {
+                free(r);
+		return NULL;
             }
             buf[i] = '\0';
             continue;
@@ -757,10 +758,11 @@ char *ssh_path_expand_escape(ssh_session session, const char *s) {
         }
 
         i += strlen(x);
-        if (i > MAX_BUF_SIZE) {
+        if (i >= MAX_BUF_SIZE) {
             ssh_set_error(session, SSH_FATAL,
                     "String too long");
-            return NULL;
+		free(x);
+		return NULL;
         }
         l = strlen(buf);
         strcat(buf + l, x);
